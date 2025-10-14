@@ -15,6 +15,7 @@ import Team from "./pages/Team";
 import Reports from "./pages/Reports";
 import AccessControl from "./pages/AccessControl";
 import Settings from "./pages/Settings";
+import Project from "./pages/Project";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/comments" element={<Comments />} />
               <Route path="/clients" element={<Clients />} />
+              <Route path="/projects/:id" element={<Project />} />
               <Route path="/team" element={<Team />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/access" element={<AccessControl />} />
