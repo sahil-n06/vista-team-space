@@ -10,7 +10,12 @@ import {
   Users,
   LogOut,
   ShieldCheck,
+  ChevronRight,
+  ChevronDown,
+  Plus,
+  FolderKanban,
 } from "lucide-react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -58,6 +63,36 @@ export function AppSidebar() {
     enabled: !!user,
   });
 
+  const { data: workspaces } = useQuery({
+    queryKey: ["workspaces"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("organizations")
+        .select(`
+          id,
+          name,
+          slug,
+          projects (
+            id,
+            name,
+            status
+          )
+        `)
+        .order("name");
+      return data || [];
+    },
+  });
+
+  const [expandedWorkspaces, setExpandedWorkspaces] = useState<string[]>([]);
+
+  const toggleWorkspace = (workspaceId: string) => {
+    setExpandedWorkspaces(prev =>
+      prev.includes(workspaceId)
+        ? prev.filter(id => id !== workspaceId)
+        : [...prev, workspaceId]
+    );
+  };
+
   const isActive = (path: string) => currentPath === path;
   const collapsed = state === "collapsed";
   const isSuperAdmin = userRole === "super_admin";
@@ -65,6 +100,59 @@ export function AppSidebar() {
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
       <SidebarContent>
+        {!collapsed && workspaces && workspaces.length > 0 && (
+          <SidebarGroup className="pt-6 border-b border-sidebar-border pb-4">
+            <div className="flex items-center justify-between px-3 mb-2">
+              <SidebarGroupLabel className="text-xs font-semibold">Spaces</SidebarGroupLabel>
+              <Plus className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" />
+            </div>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {workspaces.map((workspace: any) => (
+                  <div key={workspace.id}>
+                    <SidebarMenuItem>
+                      <button
+                        onClick={() => toggleWorkspace(workspace.id)}
+                        className="flex items-center gap-2 px-3 py-2 w-full hover:bg-sidebar-accent/50 rounded-lg transition-all"
+                      >
+                        <div className="h-5 w-5 rounded bg-primary/20 flex items-center justify-center shrink-0">
+                          <Building2 className="h-3 w-3 text-primary" />
+                        </div>
+                        <span className="flex-1 text-left text-sm truncate">{workspace.name}</span>
+                        {expandedWorkspaces.includes(workspace.id) ? (
+                          <ChevronDown className="h-4 w-4 shrink-0" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 shrink-0" />
+                        )}
+                      </button>
+                    </SidebarMenuItem>
+                    {expandedWorkspaces.includes(workspace.id) && workspace.projects && (
+                      <div className="ml-6 mt-1 space-y-1">
+                        {workspace.projects.map((project: any) => (
+                          <NavLink
+                            key={project.id}
+                            to={`/projects/${project.id}`}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all ${
+                                isActive
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                  : "hover:bg-sidebar-accent/50"
+                              }`
+                            }
+                          >
+                            <FolderKanban className="h-4 w-4 shrink-0" />
+                            <span className="truncate">{project.name}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         <SidebarGroup className="pt-6">
           {!collapsed && (
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
