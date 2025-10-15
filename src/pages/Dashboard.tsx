@@ -79,9 +79,9 @@ const Dashboard = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2">Good morning! 👋</h1>
         <p className="text-muted-foreground">
-          Welcome back! Here's an overview of your workspace.
+          Here's an overview of your workspace today.
         </p>
       </div>
 
@@ -89,13 +89,15 @@ const Dashboard = () => {
         {stats.map((stat) => (
           <Card
             key={stat.title}
-            className="hover-lift border-border shadow-soft"
+            className="hover-lift border-border shadow-soft backdrop-blur-sm"
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {stat.title}
               </CardTitle>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <div className={`rounded-lg p-2 bg-${stat.color.replace('text-', '')}/10`}>
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              </div>
             </CardHeader>
             <CardContent>
               {stat.loading ? (
