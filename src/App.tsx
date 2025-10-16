@@ -18,6 +18,7 @@ import AccessControl from "./pages/AccessControl";
 import Settings from "./pages/Settings";
 import Project from "./pages/Project";
 import Admin from "./pages/Admin";
+import Integrations from "./pages/Integrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/access" element={<AccessControl />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/integrations" element={<Integrations />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
               <Route path="*" element={<NotFound />} />

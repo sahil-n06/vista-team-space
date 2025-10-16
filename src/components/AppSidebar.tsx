@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Plus,
   FolderKanban,
+  Plug,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -40,6 +41,7 @@ const navigationItems = [
   { title: "Team", url: "/team", icon: Users },
   { title: "Reports", url: "/reports", icon: BarChart3 },
   { title: "Access Control", url: "/access", icon: Shield },
+  { title: "Integrations", url: "/integrations", icon: Plug },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
