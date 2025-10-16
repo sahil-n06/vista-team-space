@@ -101,10 +101,10 @@ export function AppSidebar() {
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
       <SidebarContent>
         {!collapsed && workspaces && workspaces.length > 0 && (
-          <SidebarGroup className="pt-6 border-b border-sidebar-border pb-4">
-            <div className="flex items-center justify-between px-3 mb-2">
-              <SidebarGroupLabel className="text-xs font-semibold">Spaces</SidebarGroupLabel>
-              <Plus className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" />
+          <SidebarGroup className="pt-4 border-b border-sidebar-border pb-4">
+            <div className="flex items-center justify-between px-2 mb-3">
+              <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider">Workspaces</SidebarGroupLabel>
+              <Plus className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -153,9 +153,9 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        <SidebarGroup className="pt-6">
+        <SidebarGroup className="pt-4">
           {!collapsed && (
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel className="px-2 mb-2 text-xs font-semibold uppercase tracking-wider">Navigation</SidebarGroupLabel>
           )}
           <SidebarGroupContent>
             <SidebarMenu>
