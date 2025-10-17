@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Lock, User } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +16,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -27,6 +29,7 @@ const Auth = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setSigningIn(true);
 
     try {
       if (isLogin) {
@@ -38,7 +41,8 @@ const Auth = () => {
         if (error) throw error;
         
         toast.success("Welcome back!");
-        navigate("/dashboard");
+        // Keep loading screen showing during navigation
+        setTimeout(() => navigate("/dashboard"), 800);
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -53,20 +57,32 @@ const Auth = () => {
 
         if (error) throw error;
         
-        toast.success("Account created successfully!");
-        navigate("/dashboard");
+        toast.success("Account created successfully! Redirecting...");
+        setTimeout(() => navigate("/dashboard"), 800);
       }
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
-    } finally {
       setLoading(false);
+      setSigningIn(false);
     }
   };
 
+  if (signingIn) {
+    return (
+      <LoadingSpinner 
+        fullScreen 
+        message={isLogin ? "Signing you in..." : "Creating your account..."} 
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-      <Card className="w-full max-w-md shadow-large">
-        <CardHeader className="space-y-2 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 animate-fade-in">
+      <Card className="w-full max-w-md shadow-large hover-lift">
+        <CardHeader className="space-y-3 text-center">
+          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center animate-scale-in">
+            <Lock className="h-8 w-8 text-white" />
+          </div>
           <CardTitle className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
             Portal 360
           </CardTitle>
@@ -77,8 +93,11 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+              <div className="space-y-2 animate-fade-in">
+                <Label htmlFor="fullName" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Full Name
+                </Label>
                 <Input
                   id="fullName"
                   type="text"
@@ -87,12 +106,16 @@ const Auth = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   required
                   disabled={loading}
+                  className="transition-all focus:scale-[1.02]"
                 />
               </div>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -101,11 +124,15 @@ const Auth = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="transition-all focus:scale-[1.02]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -115,24 +142,33 @@ const Auth = () => {
                 required
                 minLength={6}
                 disabled={loading}
+                className="transition-all focus:scale-[1.02]"
               />
             </div>
 
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full relative overflow-hidden group" 
               disabled={loading}
             >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLogin ? "Sign In" : "Sign Up"}
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {isLogin ? "Sign In" : "Sign Up"}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity" />
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setEmail("");
+                setPassword("");
+                setFullName("");
+              }}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
               disabled={loading}
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
