@@ -20,6 +20,7 @@ import {
   Calendar,
   ListChecks
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Integration {
   id: string;
@@ -120,6 +121,74 @@ export default function Integrations() {
     setIsMigrating(false);
   };
 
+  const importDummyData = async (integration: Integration) => {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("You must be signed in to migrate data.");
+
+    // Pick a recent project to attach imported tasks to (if available)
+    const { data: projects } = await supabase
+      .from("projects")
+      .select("id")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const projectId = projects?.[0]?.id ?? null;
+
+    const now = new Date().toISOString();
+    const prefix = `[${integration.name}]`;
+    const tasksToInsert = [
+      {
+        title: `${prefix} Import Setup`,
+        description: `Imported from ${integration.name} at ${now}`,
+        status: "todo" as const,
+        priority: "medium" as const,
+        created_by: user.id,
+        project_id: projectId,
+      },
+      {
+        title: `${prefix} Data Mapping`,
+        description: "Map fields and normalize",
+        status: "in_progress" as const,
+        priority: "high" as const,
+        created_by: user.id,
+        project_id: projectId,
+      },
+      {
+        title: `${prefix} Verify Records`,
+        description: "QA migrated items",
+        status: "todo" as const,
+        priority: "medium" as const,
+        created_by: user.id,
+        project_id: projectId,
+      },
+      {
+        title: `${prefix} Stakeholder Review`,
+        description: "Share results with team",
+        status: "todo" as const,
+        priority: "low" as const,
+        created_by: user.id,
+        project_id: projectId,
+      },
+    ];
+
+    const { data: inserted, error: insertErr } = await supabase
+      .from("tasks")
+      .insert(tasksToInsert)
+      .select("id");
+    if (insertErr) throw insertErr;
+
+    if (inserted && inserted.length) {
+      const comments = inserted.map((t) => ({
+        task_id: t.id,
+        content: `Imported from ${integration.name}. Source: API`,
+        user_id: user.id,
+      }));
+      await supabase.from("comments").insert(comments);
+    }
+  };
+
   const handleMigrate = () => {
     if (!apiKey) {
       toast({
@@ -131,23 +200,35 @@ export default function Integrations() {
     }
 
     setIsMigrating(true);
-    
+
     // Simulate migration progress
     let progress = 0;
     const interval = setInterval(() => {
       progress += 10;
       setMigrationProgress(progress);
-      
+
       if (progress >= 100) {
         clearInterval(interval);
-        setIsMigrating(false);
-        toast({
-          title: "Migration Complete!",
-          description: `Successfully migrated data from ${selectedIntegration?.name}`,
-        });
-        setTimeout(() => {
-          setSelectedIntegration(null);
-        }, 1500);
+        (async () => {
+          try {
+            if (selectedIntegration) {
+              await importDummyData(selectedIntegration);
+            }
+            setIsMigrating(false);
+            toast({
+              title: "Migration Complete!",
+              description: `Successfully migrated data from ${selectedIntegration?.name}`,
+            });
+            setTimeout(() => setSelectedIntegration(null), 1500);
+          } catch (e: any) {
+            setIsMigrating(false);
+            toast({
+              title: "Migration Failed",
+              description: e?.message ?? "Something went wrong while saving imported data.",
+              variant: "destructive",
+            });
+          }
+        })();
       }
     }, 500);
   };
