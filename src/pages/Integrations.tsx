@@ -117,6 +117,7 @@ export default function Integrations() {
     setSelectedIntegration(integration);
     setApiKey("");
     setMigrationProgress(0);
+    setIsMigrating(false);
   };
 
   const handleMigrate = () => {
