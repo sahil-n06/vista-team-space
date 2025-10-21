@@ -4,13 +4,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, User, MessageSquare, CheckCircle2, Users } from "lucide-react";
+import { Calendar, User, MessageSquare, CheckCircle2, Filter } from "lucide-react";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { TaskDetailDialog } from "@/components/project/TaskDetailDialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 const Tasks = () => {
   const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   
   const { data: tasks, isLoading } = useQuery({
     queryKey: ["my-tasks"],
@@ -39,18 +44,19 @@ const Tasks = () => {
     },
   });
 
-  const { data: teamMembers } = useQuery({
-    queryKey: ["team-members"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url")
-        .limit(5);
-
-      if (error) throw error;
-      return data || [];
-    },
-  });
+  const filteredTasks = useMemo(() => {
+    if (!tasks) return [];
+    
+    return tasks.filter((task) => {
+      const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+      const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+      const matchesSearch = searchQuery === "" || 
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return matchesStatus && matchesPriority && matchesSearch;
+    });
+  }, [tasks, statusFilter, priorityFilter, searchQuery]);
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -82,15 +88,67 @@ const Tasks = () => {
         </p>
       </div>
 
+      {/* Filters Section */}
+      <Card className="border-border shadow-soft">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-semibold">Filters</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Search</label>
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="todo">To Do</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="in_review">In Review</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="blocked">Blocked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Priority</label>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="All priorities" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="h-48 w-full" />
           ))}
         </div>
-      ) : tasks && tasks.length > 0 ? (
-        <div className="grid gap-4">
-          {tasks.map((task) => {
+      ) : filteredTasks && filteredTasks.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredTasks.map((task) => {
             const completedChecklist = task.task_checklist_items?.filter((item: any) => item.completed).length || 0;
             const totalChecklist = task.task_checklist_items?.length || 0;
             const commentCount = task.comments?.length || 0;
@@ -100,94 +158,67 @@ const Tasks = () => {
                 key={task.id}
                 className={`border-l-4 ${getPriorityColor(
                   task.priority
-                )} hover-lift shadow-soft cursor-pointer transition-all`}
+                )} hover-lift shadow-soft cursor-pointer transition-all h-full flex flex-col`}
                 onClick={() => setSelectedTask(task)}
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2 flex-1">
-                      <h3 className="text-lg font-semibold">{task.title}</h3>
-                      {task.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {task.description}
-                        </p>
-                      )}
-                    </div>
-                    <Badge className={getStatusColor(task.status)}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-base font-semibold line-clamp-2 flex-1">{task.title}</h3>
+                    <Badge className={`${getStatusColor(task.status)} text-xs shrink-0`}>
                       {task.status.replace("_", " ")}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+                    
+                    <div className="space-y-2 text-xs">
                       {task.organization && (
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          <span>{task.organization.name}</span>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <User className="h-3 w-3" />
+                          <span className="truncate">{task.organization.name}</span>
                         </div>
                       )}
                       {task.due_date && (
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>Due {format(new Date(task.due_date), "MMM dd, yyyy")}</span>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>{format(new Date(task.due_date), "MMM dd")}</span>
                         </div>
                       )}
-                      <Badge variant="outline" className="capitalize">
+                    </div>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-xs">
+                      <Badge variant="outline" className="capitalize text-xs px-2 py-0">
                         {task.priority}
                       </Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm">
-                        {totalChecklist > 0 && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span>{completedChecklist}/{totalChecklist}</span>
-                          </div>
-                        )}
-                        {commentCount > 0 && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <MessageSquare className="h-4 w-4" />
-                            <span>{commentCount}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {task.assignee && (
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-7 w-7">
-                            <AvatarImage src={task.assignee.avatar_url} />
-                            <AvatarFallback className="text-xs">
-                              {task.assignee.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm text-muted-foreground">
-                            {task.assignee.full_name}
-                          </span>
+                      {totalChecklist > 0 && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>{completedChecklist}/{totalChecklist}</span>
+                        </div>
+                      )}
+                      {commentCount > 0 && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <MessageSquare className="h-3 w-3" />
+                          <span>{commentCount}</span>
                         </div>
                       )}
                     </div>
 
-                    {teamMembers && teamMembers.length > 0 && (
-                      <div className="flex items-center gap-2 pt-2 border-t">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <div className="flex -space-x-2">
-                          {teamMembers.slice(0, 3).map((member) => (
-                            <Avatar key={member.id} className="h-6 w-6 border-2 border-background">
-                              <AvatarImage src={member.avatar_url} />
-                              <AvatarFallback className="text-xs">
-                                {member.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
-                          {teamMembers.length > 3 && (
-                            <div className="h-6 w-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                              <span className="text-[10px] text-muted-foreground">+{teamMembers.length - 3}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    {task.assignee && (
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={task.assignee.avatar_url} />
+                        <AvatarFallback className="text-[10px]">
+                          {task.assignee.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
                     )}
                   </div>
                 </CardContent>
@@ -195,6 +226,14 @@ const Tasks = () => {
             );
           })}
         </div>
+      ) : tasks && tasks.length > 0 ? (
+        <Card className="border-border shadow-medium">
+          <CardContent className="py-12">
+            <p className="text-center text-muted-foreground">
+              No tasks match your filters
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <Card className="border-border shadow-medium">
           <CardContent className="py-12">
