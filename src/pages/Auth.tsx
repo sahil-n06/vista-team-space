@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, User } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { z } from "zod";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,8 +27,40 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const authSchema = z.object({
+    email: z.string()
+      .email('Invalid email format')
+      .max(255, 'Email is too long'),
+    password: z.string()
+      .min(8, 'Password must be at least 8 characters')
+      .max(128, 'Password is too long')
+      .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+      .regex(/[a-z]/, 'Password must contain a lowercase letter')
+      .regex(/[0-9]/, 'Password must contain a number'),
+    fullName: z.string()
+      .trim()
+      .min(2, 'Name must be at least 2 characters')
+      .max(100, 'Name is too long')
+      .optional()
+  });
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate inputs before submission
+    try {
+      authSchema.parse({
+        email,
+        password,
+        fullName: !isLogin ? fullName : undefined
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+
     setLoading(true);
     setSigningIn(true);
 

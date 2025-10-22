@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 import { 
   CheckCircle2, 
   Circle, 
@@ -189,6 +190,12 @@ export default function Integrations() {
     }
   };
 
+  const apiKeySchema = z.string()
+    .trim()
+    .min(10, 'API key must be at least 10 characters')
+    .max(500, 'API key is too long')
+    .regex(/^[A-Za-z0-9_\-\.]+$/, 'API key contains invalid characters');
+
   const handleMigrate = () => {
     if (!apiKey) {
       toast({
@@ -197,6 +204,20 @@ export default function Integrations() {
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate API key format
+    try {
+      apiKeySchema.parse(apiKey);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Invalid API Key",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsMigrating(true);
