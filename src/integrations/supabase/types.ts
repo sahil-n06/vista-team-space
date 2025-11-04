@@ -56,6 +56,86 @@ export type Database = {
           },
         ]
       }
+      custom_fields: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          field_type: string
+          id: string
+          is_required: boolean
+          name: string
+          options: Json | null
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          field_type: string
+          id?: string
+          is_required?: boolean
+          name: string
+          options?: Json | null
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          field_type?: string
+          id?: string
+          is_required?: boolean
+          name?: string
+          options?: Json | null
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      login_sessions: {
+        Row: {
+          browser: string | null
+          device: string | null
+          id: string
+          ip_address: string | null
+          is_active: boolean
+          last_active_at: string
+          location: string | null
+          login_at: string
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          device?: string | null
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_active_at?: string
+          location?: string | null
+          login_at?: string
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          device?: string | null
+          id?: string
+          ip_address?: string | null
+          is_active?: boolean
+          last_active_at?: string
+          location?: string | null
+          login_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       organizations: {
         Row: {
           created_at: string | null
@@ -168,6 +248,53 @@ export type Database = {
           },
           {
             foreignKeyName: "projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      statuses: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_editable: boolean
+          name: string
+          organization_id: string | null
+          position: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_editable?: boolean
+          name: string
+          organization_id?: string | null
+          position?: number
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_editable?: boolean
+          name?: string
+          organization_id?: string | null
+          position?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "statuses_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -325,6 +452,83 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worksheet_statuses: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          status_id: string
+          worksheet_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          status_id: string
+          worksheet_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          status_id?: string
+          worksheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worksheet_statuses_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "statuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worksheet_statuses_worksheet_id_fkey"
+            columns: ["worksheet_id"]
+            isOneToOne: false
+            referencedRelation: "worksheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worksheets: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worksheets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
