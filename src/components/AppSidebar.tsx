@@ -15,6 +15,7 @@ import {
   Plus,
   FolderKanban,
   Plug,
+  LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -42,6 +43,7 @@ const navigationItems = [
   { title: "Reports", url: "/reports", icon: BarChart3 },
   { title: "Access Control", url: "/access", icon: Shield },
   { title: "Integrations", url: "/integrations", icon: Plug },
+  { title: "Control Center", url: "/control-center", icon: LayoutGrid },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
