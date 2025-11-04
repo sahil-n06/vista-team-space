@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, User, MessageSquare, CheckCircle2, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useMemo } from "react";
-import { TaskDetailDialog } from "@/components/project/TaskDetailDialog";
+import { TaskDetailDialog } from "@/components/project/TaskDetail/task-detail-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 

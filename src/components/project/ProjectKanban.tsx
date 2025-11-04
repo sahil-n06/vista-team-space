@@ -22,7 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { TaskDetailDialog } from "./TaskDetailDialog";
+import { TaskDetailDialog } from "./TaskDetail/task-detail-dialog";
 
 interface ProjectKanbanProps {
   tasks: any[];
