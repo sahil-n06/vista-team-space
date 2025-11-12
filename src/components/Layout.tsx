@@ -1,25 +1,31 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ChatMiniSidebar } from "@/components/chat/ChatMiniSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
 import LoadingScreen from "@/components/LoadingScreen";
 import ThemeToggle from "@/components/ThemeToggle";
+import { SidebarManagerProvider, useSidebarManager } from "@/contexts/SidebarContext";
 
-const Layout = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+function LayoutContent() {
+  const { activeSidebar } = useSidebarManager();
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
+        {/* Conditional Sidebar Rendering with Animation */}
+        <div className="relative">
+          {activeSidebar === "main" ? (
+            <div className="animate-fade-in">
+              <AppSidebar />
+            </div>
+          ) : (
+            <div className="animate-fade-in">
+              <ChatMiniSidebar />
+            </div>
+          )}
+        </div>
+
         <div className="flex-1 flex flex-col">
           <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6 sticky top-0 z-10 shadow-soft">
             <div className="flex items-center gap-4">
@@ -34,6 +40,24 @@ const Layout = () => {
         </div>
       </div>
     </SidebarProvider>
+  );
+}
+
+const Layout = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return (
+    <SidebarManagerProvider>
+      <LayoutContent />
+    </SidebarManagerProvider>
   );
 };
 

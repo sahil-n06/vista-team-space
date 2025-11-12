@@ -33,26 +33,28 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSidebarManager } from "@/contexts/SidebarContext";
 import { Button } from "@/components/ui/button";
 
 const navigationItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "My Tasks", url: "/tasks", icon: CheckSquare },
-  { title: "Comments", url: "/comments", icon: MessageSquare },
-  { title: "Chat Assistant", url: "/chat", icon: MessagesSquare },
-  { title: "Clients", url: "/clients", icon: Building2 },
-  { title: "Team", url: "/team", icon: Users },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
-  { title: "Access Control", url: "/access", icon: Shield },
-  { title: "Integrations", url: "/integrations", icon: Plug },
-  { title: "Control Center", url: "/control-center", icon: LayoutGrid },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, type: "link" },
+  { title: "My Tasks", url: "/tasks", icon: CheckSquare, type: "link" },
+  { title: "Comments", url: "/comments", icon: MessageSquare, type: "link" },
+  { title: "Chat Assistant", url: "/chat", icon: MessagesSquare, type: "action" },
+  { title: "Clients", url: "/clients", icon: Building2, type: "link" },
+  { title: "Team", url: "/team", icon: Users, type: "link" },
+  { title: "Reports", url: "/reports", icon: BarChart3, type: "link" },
+  { title: "Access Control", url: "/access", icon: Shield, type: "link" },
+  { title: "Integrations", url: "/integrations", icon: Plug, type: "link" },
+  { title: "Control Center", url: "/control-center", icon: LayoutGrid, type: "link" },
+  { title: "Settings", url: "/settings", icon: Settings, type: "link" },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { signOut, user } = useAuth();
+  const { showChatSidebar } = useSidebarManager();
   const currentPath = location.pathname;
 
   const { data: userRole } = useQuery({
@@ -114,21 +116,37 @@ export function AppSidebar() {
             <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-                          isActive
+                  {item.type === "action" ? (
+                    <SidebarMenuButton asChild>
+                      <button
+                        onClick={showChatSidebar}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all w-full ${
+                          currentPath === item.url
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                             : "hover:bg-sidebar-accent/50"
-                        }`
-                      }
-                    >
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
+                        }`}
+                      >
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </button>
+                    </SidebarMenuButton>
+                  ) : (
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+                            isActive
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                              : "hover:bg-sidebar-accent/50"
+                          }`
+                        }
+                      >
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
               {isSuperAdmin && (
