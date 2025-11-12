@@ -16,6 +16,7 @@ import {
   FolderKanban,
   Plug,
   LayoutGrid,
+  MessagesSquare,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +39,7 @@ const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Tasks", url: "/tasks", icon: CheckSquare },
   { title: "Comments", url: "/comments", icon: MessageSquare },
+  { title: "Chat Assistant", url: "/chat", icon: MessagesSquare },
   { title: "Clients", url: "/clients", icon: Building2 },
   { title: "Team", url: "/team", icon: Users },
   { title: "Reports", url: "/reports", icon: BarChart3 },

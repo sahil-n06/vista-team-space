@@ -20,6 +20,7 @@ import Project from "./pages/Project";
 import Admin from "./pages/Admin";
 import Integrations from "./pages/Integrations";
 import ControlCenter from "./pages/ControlCenter";
+import ChatUI from "./pages/ChatUI";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/integrations" element={<Integrations />} />
                 <Route path="/control-center" element={<ControlCenter />} />
+                <Route path="/chat" element={<ChatUI />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
